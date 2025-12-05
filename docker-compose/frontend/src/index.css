@@ -1,0 +1,621 @@
+*,
+*::before,
+*::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    color: #0f172a; /* slate-900 */
+    background: #0b1020;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Variables thème */
+:root{
+    --win-radius: 14px;
+    --tile-radius: 12px;
+    --surface: rgba(255,255,255,0.88);
+    --surface-strong: rgba(255,255,255,0.96);
+    --surface-muted: rgba(255,255,255,0.70);
+    --border: rgba(15,23,42,0.12);
+    --shadow: 0 10px 30px rgba(2, 6, 23, 0.25), 0 2px 8px rgba(2, 6, 23, 0.12);
+    --blur: saturate(180%) blur(8px);
+    --accent: #2563eb; /* blue-600 */
+    --accent-weak: #93c5fd; /* blue-300 */
+    --text-muted: #475569; /* slate-600 */
+    --text-soft: #64748b; /* slate-500 */
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --ok: #22c55e;
+}
+
+/* === Desktop =============================================================== */
+.desktop{
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-position: center;
+    background-size: cover;
+    overflow: hidden;
+}
+
+/* === Window ================================================================ */
+.window{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 75%;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: var(--blur);
+    border: 1px solid var(--border);
+    border-radius: var(--win-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.window--split-left {
+    left: 50%;
+    transform: translate(-100%, -50%);
+    width: 35%;
+}
+
+.window--split-right {
+    left: 50%;
+    transform: translate(0%, -50%);
+    width: 35%;
+}
+
+.window__content{
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+}
+
+/* Scrollbars (webkit) */
+.window__content::-webkit-scrollbar { width: 10px; height: 10px; }
+.window__content::-webkit-scrollbar-thumb{
+    background: rgba(2,6,23,0.2);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+.window__content::-webkit-scrollbar-track{ background: transparent; }
+
+/* === Titlebar ============================================================= */
+.titlebar{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, rgba(226,232,240,0.9), rgba(226,232,240,0.7));
+    border-bottom: 1px solid var(--border);
+}
+.titlebar__controls{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+}
+.titlebar__title{
+    margin-left: 8px;
+    font-weight: 600;
+    color: #334155; /* slate-700 */
+}
+
+/* Window buttons (style macOS-like) */
+.winbtn{
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.15);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+    display:inline-block;
+    appearance: none;
+    padding:0;
+    cursor: pointer;
+}
+.winbtn--close{ background: var(--danger); }
+.winbtn--min{ background: var(--warn); }
+.winbtn--max{ background: var(--ok); }
+.winbtn:active{ transform: translateY(1px); }
+
+/* === Explorer ============================================================== */
+.explorer{ padding: 8px; }
+
+/* Fil d’Ariane */
+.breadcrumb{
+    display:flex;
+    align-items:center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+/* Grille des items */
+.explorer-grid{
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0,1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+@media (max-width: 1200px){
+    .explorer-grid{ grid-template-columns: repeat(5, minmax(0,1fr)); }
+}
+@media (max-width: 992px){
+    .explorer-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+}
+@media (max-width: 768px){
+    .explorer-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 576px){
+    .explorer-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+/* Tuile dossier/fichier */
+.tile{
+    position: relative;
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    gap: 10px;
+    padding: 14px 8px 10px;
+    user-select: none;
+    cursor: default;
+    border-radius: var(--tile-radius);
+    border: 1px solid transparent;
+    transition: transform .12s ease, background-color .12s ease, border-color .12s ease, box-shadow .12s ease;
+    text-align: center;
+}
+
+.tile:hover{
+    transform: translateY(-2px);
+    background: var(--surface-muted);
+    border-color: var(--border);
+    box-shadow: 0 6px 16px rgba(2,6,23,0.12);
+}
+.tile:active{ transform: translateY(0); }
+
+/* zone icône (les <FolderIcon/> / <FileIcon/> sont des SVG) */
+.tile__icon{
+    width: 64px;
+    height: 64px;
+    display:grid;
+    place-items:center;
+}
+.tile__icon svg{
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 2px 4px rgba(2,6,23,0.25));
+}
+
+/* étiquette */
+.tile__label{
+    max-width: 120px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: #0f172a;
+    word-break: break-word;
+    background: rgba(255,255,255,0.85);
+    padding: 4px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.trash {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+/* variations dossier/fichier */
+.tile--folder .tile__icon svg{ /* exemple: teinte dossier */
+    /* filter: hue-rotate(185deg) saturate(1.1); */
+}
+.tile--file .tile__icon svg{}
+
+/* états communs */
+.tile.is-selected{
+    background: rgba(37,99,235,0.10);
+    border-color: rgba(37,99,235,0.35);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+.tile.is-disabled{
+    opacity: .6;
+    pointer-events: none;
+}
+
+/* Loading / error */
+.explorer__loading{
+    padding: 16px;
+    color: var(--text-soft);
+    font-style: italic;
+}
+.explorer__error{
+    padding: 16px;
+    color: #b91c1c; /* red-700 */
+    font-weight: 600;
+}
+
+.taskbar{
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 56px;
+    display:flex;
+    align-items:center;
+    justify-content: center;
+    gap: 14px;
+    padding: 8px 16px;
+    backdrop-filter: var(--blur);
+    background: linear-gradient(180deg, rgba(241,245,249,0.55), rgba(226,232,240,0.55));
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 18px rgba(2,6,23,0.18);
+}
+
+.taskbar__dock{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    padding: 6px 10px;
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.dock-item{
+    width: 38px;
+    height: 38px;
+    display:grid;
+    place-items:center;
+    border-radius: 10px;
+    transition: transform .1s ease, background-color .1s ease;
+    cursor: pointer;
+}
+.dock-item:hover{ transform: translateY(-3px) scale(1.05); background: var(--surface-muted); }
+
+.taskbar__tray{
+    position: absolute;
+    right: 16px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+}
+.taskbar__clock{
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.65);
+    border: 1px solid var(--border);
+}
+
+/* === Utilitaires légers ==================================================== */
+.hidden { display:none !important; }
+.sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+
+/* === Focus visible ========================================================= */
+:focus-visible{
+    outline: 3px solid var(--accent-weak);
+    outline-offset: 2px;
+    border-radius: 10px;
+}
+
+.breadcrumb a, .breadcrumb button{
+    color: #1f2937; /* gray-800 */
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    padding: 4px 6px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.breadcrumb a:hover, .breadcrumb button:hover{
+    background: rgba(2,6,23,0.06);
+}
+.breadcrumb .separator{
+    color: var(--text-soft);
+    margin: 0 2px;
+}
+
+/* Barre de navigation type navigateur */
+.nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: linear-gradient(
+            180deg,
+            rgba(241, 245, 249, 0.95),
+            rgba(226, 232, 240, 0.9)
+    );
+    border-bottom: 1px solid var(--border);
+}
+.nav-buttons {
+    display: flex;
+    gap: 6px;
+}
+.nav-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-strong);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.nav-btn:hover {
+    background: var(--surface-muted);
+}
+.nav-btn:active {
+    transform: translateY(1px);
+}
+
+/* Fenêtre max */
+.window.window--max {
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+}
+
+/* Fenêtre réduite */
+.window.window--min {
+    height: auto;
+    width: 300px;
+    bottom: 0;
+    right: 0;
+    top: auto;
+    left: auto;
+    transform: none;
+}
+
+/* === Desktop Icon ================================================== */
+.desktop-icon {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: default;
+    user-select: none;
+    text-align: center;
+}
+
+.desktop-icon__img {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 6px;
+}
+
+.desktop-icon__label {
+    font-size: 12px;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.3);
+    padding: 2px 4px;
+    border-radius: 6px;
+}
+
+/* === Ajustement Titlebar ============================================ */
+.titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* titre à gauche, boutons à droite */
+    gap: 8px;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, rgba(226,232,240,0.9), rgba(226,232,240,0.7));
+    border-bottom: 1px solid var(--border);
+}
+
+.titlebar__title {
+    font-weight: 600;
+    color: #334155; /* slate-700 */
+}
+
+.titlebar__controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-viewer__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.file-viewer__content {
+    position: relative;
+    width: 90%;
+    height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(30, 30, 30);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+
+.file-viewer__image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.file-viewer__text {
+    width: 100%;
+    height: 100%;
+    background: #1e1e1e;
+    color: #f0f0f0;
+    padding: 16px;
+    border-radius: 8px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+
+.file-viewer__close {
+    position: absolute;
+    top: -22px;
+    right: -22px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.winbtn--disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.purged {
+    opacity: 0;
+    transform: translateY(100vh) scale(0.98);
+    transition: opacity .3s ease, transform .35s ease;
+    pointer-events: none;
+}
+
+/* style de base pour tous les boutons */
+.btn {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.3); /* semi-transparent */
+    color: #333;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+    opacity: 0.8;             /* caché par défaut */
+}
+
+/* visible au hover */
+.folder-item:hover .btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* variations */
+.btn--primary {
+    color: white;
+    background: linear-gradient(135deg, #6a8dff, #5c6bff);
+}
+
+.btn--primary:hover {
+    background: linear-gradient(135deg, #5c6bff, #4a54d6);
+}
+
+.btn--danger {
+    color: white;
+    background: linear-gradient(135deg, #ff6a6a, #e94e4e);
+}
+
+.btn--danger:hover {
+    background: linear-gradient(135deg, #e94e4e, #c93a3a);
+}
+
+.file-viewer__editor {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-viewer__textarea {
+    flex: 1; /* prend toute la hauteur */
+    width: 100%;
+    background: transparent; /* pas de fond blanc */
+    color: white; /* texte blanc */
+    border: none;
+    outline: none;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    resize: none; /* pas de resize manuel */
+}
+
+/* bouton en bas à droite */
+.file-viewer__save {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background: #4a47a3;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.file-viewer__save:hover {
+    background: #373493;
+}
+
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #2d2d2d;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-size: 14px;
+    animation: fadeIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+}
+
+.notification.success {
+    background: #4caf50; /* vert */
+}
+
+.notification.error {
+    background: #f44336; /* rouge */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(10px); }
+}
