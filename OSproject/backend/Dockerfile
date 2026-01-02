@@ -1,6 +1,6 @@
 # Backend Dockerfile
 
-FROM openjdk:17-jdk-slim as build
+FROM eclipse-temurin:17-jdk-jammy as build
 WORKDIR /app
 
 COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts ./
@@ -11,7 +11,7 @@ COPY src ./src
 
 RUN ./gradlew build --no-daemon -x test
 
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y tzdata
