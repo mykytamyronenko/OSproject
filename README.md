@@ -49,14 +49,14 @@ Le projet est principalement destiné à être consulté dans le cadre d’une �
 
 Étapes
 
-Cloner le dépôt :
-
+Avoir Docker ouvert et écrire ces lignes dans le terminal :
 ```bash
 git clone https://github.com/mykytamyronenko/OSproject.git
 cd OSproject/OSproject
 docker compose up --build
 ```
 Le premier lancement peut prendre plusieurs minutes.
+
 
 Une fois les conteneurs démarrés, ouvrir un navigateur web (Chrome recommandé) et accéder à :
 ```bash
