@@ -60,4 +60,4 @@ Le premier lancement peut prendre plusieurs minutes.
 
 Une fois les conteneurs démarrés, ouvrir un navigateur web (Chrome recommandé) et accéder à :
 ```bash
-http://localhost:5173
+http://localhost:5173/
